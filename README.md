@@ -1,0 +1,2 @@
+# CLROpencvDigitImageProcessing
+用opencv实现的相关算法与功能代码
