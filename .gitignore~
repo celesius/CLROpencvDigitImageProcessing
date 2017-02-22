@@ -31,6 +31,3 @@
 #image
 *.jpg
 *.png
-
-#video
-*.avi
