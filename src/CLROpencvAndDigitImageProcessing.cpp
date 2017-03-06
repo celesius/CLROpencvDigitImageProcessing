@@ -94,11 +94,20 @@ int main(){
 #endif
 
 int main(){
-	IFVRStereoCamera* cam = new IFVRStereoCamera("/dev/video1", 752, 480);
-	uint8_t* image;
-	for(;;)
-	cam->update(image);
+	//IFVRStereoCamera* cam = new IFVRStereoCamera("/dev/video1", 752, 480);
+	//uint8_t* image;
+	//for(;;)
+	//cam->update(image);
 
-	delete cam;
+	cv::VideoCapture cap =  cv::VideoCapture(1);
+	cv::Mat frame;
+	for(;;)
+	{
+		cap >> frame;
+		cv::imshow("video",frame);
+		cv::waitKey(1);
+	}
+
+	//delete cam;
 }
 
