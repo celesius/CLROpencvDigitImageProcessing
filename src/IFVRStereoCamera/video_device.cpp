@@ -617,8 +617,8 @@ int video_device::yuyv_2_lr_gray(const void *p, int size, unsigned char *l_buffe
     uint32_t r = 0;
     //char
     for(int i = 0; i< (size/2); i++){
-    	l = (pointer[i*2]) * 2;
-    	r = (pointer[i*2 + 1]) * 2;
+    	l = (pointer[i*2]) * 4;
+    	r = (pointer[i*2 + 1]) * 4;
 
     	if(l > 255 )
     		l = 254;//254;

@@ -13,6 +13,7 @@
 #include "CLRReadAndCombShow.h"
 #include "DisparityMask/CLRDisparityMask.h"
 #include "IFVRStereoCamera/IFVRStereoCamera.h"
+#include "cali/IFVRMonoCameraCalib.h"
 using namespace std;
 using namespace cv;
 
@@ -94,11 +95,76 @@ int main(){
 #endif
 
 int main(){
-	//IFVRStereoCamera* cam = new IFVRStereoCamera("/dev/video1", 752, 480);
-	//uint8_t* image;
-	//for(;;)
-	//cam->update(image);
+	DuoCalibrator calib(cv::Size(11,7)) ;
+	//IFVRStereoCamera* cam = new IFVRStereoCamera("/dev/video1", 752, 480, StereoCamera);
+	IFVRStereoCamera* cam = new IFVRStereoCamera("1", 640, 480, MonoCamera);
+	IFVRMonoCameraCalib *monoCamCalib = new IFVRMonoCameraCalib(cv::Size(11,7));
+	cv::Mat drawChessMat;
 
+	uint8_t* image;
+
+	cv::Mat grayL;
+	cv::Mat grayR;
+
+
+	bool capImage = true;
+	bool cablib = false;
+
+	bool capOk = false;
+	bool calibOk = false;
+
+	cv::Mat remap;
+
+	int capMonoImage = 0;
+	char capStatus[100];
+	sprintf(capStatus, "capture image : %d",capMonoImage);
+	for(;;){
+		cam->update(grayL, grayR);
+		capOk = monoCamCalib->captureMat(grayL,true,drawChessMat);
+		cv::putText(drawChessMat, capStatus, cv::Point(50,50),1,1,cv::Scalar(0,255,0));
+		cv::imshow("chess", drawChessMat);
+		if(calibOk){
+			monoCamCalib->runCheckCalib(grayL, remap);
+			cv::imshow("remap", remap);
+		}
+		int key = cv::waitKey(1);
+		if(key == 'q')
+			break;
+		else if(key == 'c')
+		{
+			calibOk = monoCamCalib->runCalibAndSaveTo("");
+		}
+		else if(key == 32){ //
+			if(capOk){
+				if(monoCamCalib->saveCurrentPoint()){
+					sprintf(capStatus, "capture image : %d",capMonoImage++);
+				}
+			}
+		}
+		else if(key != -1)
+		{
+			printf("get key = %d\n",key);
+		}
+
+		/*
+		if(capImage)
+			capImage = calibDuoRunByCaptureMat(grayL,grayR,&calib);
+		else
+		{
+			if(cablib)
+				checkCalibDuo(grayL,grayR,calib);
+			else{
+				std::cout << "Finished taking calibration images.\n";
+				calib.calibrate();
+				std::cout << "Stereo calibration completed.\n";
+				cablib = true;
+			}
+		}
+		*/
+	}
+
+
+/*
 	cv::VideoCapture cap =  cv::VideoCapture(1);
 	cv::Mat frame;
 	for(;;)
@@ -107,7 +173,6 @@ int main(){
 		cv::imshow("video",frame);
 		cv::waitKey(1);
 	}
-
+*/
 	//delete cam;
 }
-

@@ -9,6 +9,14 @@
 #define IFVRSTEREOCAMERA_IFVRSTEREOCAMERA_H_
 
 #include "video_device.h"
+#include <opencv2/opencv.hpp>
+
+enum cameraType{
+	MonoCamera,
+	StereoCamera
+};
+
+typedef cameraType CameraType ;
 
 class IFVRStereoCamera {
 	video_device* camera;
@@ -19,10 +27,13 @@ class IFVRStereoCamera {
 	size_t yuyv_len;
 	int m_image_w;
 	int m_image_h;
+	CameraType m_cameraType;
+	cv::VideoCapture m_opencvCap;
 public:
-	IFVRStereoCamera(std::string devn, int w, int h);
+	IFVRStereoCamera(std::string devn, int w, int h, CameraType camType);
 	virtual ~IFVRStereoCamera();
-	void update(uint8_t *image_data);
+	//void update(uint8_t *image_data);
+	void update(cv::Mat& lMat, cv::Mat& rMat);
 };
 
 #endif /* IFVRSTEREOCAMERA_IFVRSTEREOCAMERA_H_ */

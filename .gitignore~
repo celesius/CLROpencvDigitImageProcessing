@@ -3,6 +3,8 @@
 *.lo
 *.o
 *.obj
+*.d
+.*~
 
 # Precompiled Headers
 *.gch
@@ -31,3 +33,7 @@
 #image
 *.jpg
 *.png
+
+#video
+*.avi
+

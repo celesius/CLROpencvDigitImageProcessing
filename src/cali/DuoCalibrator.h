@@ -14,13 +14,15 @@ const cv::Size DUO_FULL = cv::Size( WIDTH_FULL, HEIGHT_FULL );
 class DuoCalibrator
 {
 public:
-
+/*
   DuoCalibrator( const cv::Size& boardSize )
     : m_squareLength( 2.533 )  // in cm, but this could be changed to m or mm
     , m_boardSize( boardSize ) // inner corners (this project's "chessboard" is 9x6)
     , m_imageSize( VGA )       // default resolution (could go as high as 752x480)
   {}
+*/
 
+  DuoCalibrator( const cv::Size& boardSize );
   void processFrame( const cv::Mat& left,
                      const cv::Mat& right,
                      std::vector<cv::Point2f>& leftPtsOut,
@@ -37,6 +39,7 @@ public:
   const cv::Mat& undistortAndRectifyRight( const cv::Mat& right ) const;
 
   const cv::Mat& getDisparity( const cv::Mat& left, const cv::Mat& right ) const;
+  const cv::Size                        m_boardSize;
 
 private:
 
@@ -56,7 +59,7 @@ private:
 
   const float                           m_squareLength;
 
-  const cv::Size                        m_boardSize;
+  //const cv::Size                        m_boardSize;
   const cv::Size                        m_imageSize;
 
   //

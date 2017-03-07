@@ -5,14 +5,17 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../src/cali/DuoCalibrator.cpp \
+../src/cali/IFVRMonoCameraCalib.cpp \
 ../src/cali/calibDuo.cpp 
 
 OBJS += \
 ./src/cali/DuoCalibrator.o \
+./src/cali/IFVRMonoCameraCalib.o \
 ./src/cali/calibDuo.o 
 
 CPP_DEPS += \
 ./src/cali/DuoCalibrator.d \
+./src/cali/IFVRMonoCameraCalib.d \
 ./src/cali/calibDuo.d 
 
 

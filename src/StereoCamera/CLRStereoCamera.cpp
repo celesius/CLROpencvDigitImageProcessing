@@ -92,8 +92,8 @@ void CLRStereoCamera::capture_image_for_calib(CAPTURE_IMAGE_TYPE cap_type, cv::S
 	//	cv::findChessboardCorners()
 	int save_cnt = 0;
 	char image_name[50];
-	m_cap.set(3, 640*2);
-	m_cap.set(4, 480);
+	//m_cap.set(3, 640*2);
+	//m_cap.set(4, 480);
 	if(m_cap.isOpened()){
 		for(;;){
 			m_cap >> frame;

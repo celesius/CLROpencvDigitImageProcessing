@@ -4,7 +4,6 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 
-#include "DuoCalibrator.h"
 #include "DuoUtility.h"
 #include "calibDuo.h"
 #include "../CLRCVHelper/CLRCVHelper.hpp"
@@ -281,6 +280,177 @@ int calibDuoRun( int cameraID )
     
     return 0;
 }
+
+void initCalibDuo(cv::Size boardSize, DuoCalibrator *calib)
+{
+	calib = new DuoCalibrator(boardSize);
+}
+
+bool checkCalibDuo(cv::Mat& left, cv::Mat& right, DuoCalibrator& calibDuo)
+{
+        //
+        // Capture DUO frame
+        //
+        //PDUOFrame pFrameData = GetDUOFrame();
+        //cap >> frame;
+        //cv::cvtColor(frame, frame, CV_BGR2GRAY);
+        //sprintf(frameName, "/Users/clover/workspace/XCodeCPP/CLRStereoMatch/capStereoImage/img%04d.jpg",frameCnt);
+        //cv::imwrite(frameName, frame);
+        //display = frame;
+
+        //if( pFrameData == nullptr ) continue;
+
+        //
+        // Set the image data
+        //
+        //left.data  = (uint8_t*) pFrameData->leftData;
+        //right.data = (uint8_t*) pFrameData->rightData;
+        //left = splitMat(frame, true);
+        //right = splitMat(frame, false);
+
+        const cv::Mat& newLeft  = calibDuo.undistortAndRectifyLeft( left );
+        const cv::Mat& newRight = calibDuo.undistortAndRectifyRight( right );
+
+        cv::Mat leftDisplay;
+        cv::Mat rightDisplay;
+
+        cv::cvtColor( newLeft,  leftDisplay,  cv::COLOR_GRAY2BGR );
+        cv::cvtColor( newRight, rightDisplay, cv::COLOR_GRAY2BGR );
+
+        cv::Mat display = combineTwoImg(leftDisplay, rightDisplay);
+
+        drawLines( display );
+
+        cv::putText( display,
+                    "Press ESC to terminate",
+                    cv::Point( 10, 30 ),
+                    cv::FONT_HERSHEY_SIMPLEX,
+                    0.75,
+                    WHITE );
+
+        cv::imshow("display", display);
+        //cv::imshow( "L", newLeft );
+        //cv::imshow("R", newRight);
+
+        const cv::Mat& disp = calibDuo.getDisparity( newLeft, newRight );
+/*
+        sprintf(frameName, "/Users/clover/workspace/XCodeCPP/CLRStereoMatch/capDispImage/img%04d.jpg",frameCnt);
+        cv::imwrite(frameName, disp);
+        frameCnt++;
+*/
+        cv::imshow( "disp", disp );
+
+        if( cv::waitKey( 5 ) == 27 )
+        {
+            //
+            // Terminate the program with ESC
+            //
+            return false;
+        }
+        return true;
+
+}
+
+
+bool calibDuoRunByCaptureMat( cv::Mat& lMat, cv::Mat& rMat, DuoCalibrator *calibDuo)
+{
+	//
+	// Capture DUO frame
+	//
+	//PDUOFrame pFrameData = GetDUOFrame();
+
+	//cap >> frame;
+	//if( pFrameData == nullptr ) continue;
+
+	//
+	// Set the image data
+	//
+	//left.data  = (uint8_t*) pFrameData->leftData;
+	//right.data = (uint8_t*) pFrameData->rightData;
+
+	//cv::cvtColor(frame, frame, CV_BGR2GRAY);
+	//left = splitMat(frame, true);
+	//right = splitMat(frame, false);
+
+	cv::Mat left = lMat;
+	cv::Mat right = rMat;
+	cv::Mat leftDisplay;
+	cv::Mat rightDisplay;
+	cv::Mat frame = combineTwoImg(left, right);
+	//cv::Mat display = frame.clone();
+	//cv::cvtColor(display, display, CV_GRAY2BGR);
+	//cv::cvtColor(left, left, CV_BGR2GRAY);
+	//cv::cvtColor(right, right, CV_BGR2GRAY);
+
+
+	static std::vector<cv::Point2f> leftPts;
+	static std::vector<cv::Point2f> rightPts;
+
+	calibDuo->processFrame( left, right, leftPts, rightPts );
+
+	//cv::imshow("lll", left);
+	//cv::imshow("rrr", right);
+	//cv::waitKey(0);
+
+	cv::cvtColor( left,  leftDisplay,  cv::COLOR_GRAY2BGR );
+	cv::cvtColor( right, rightDisplay, cv::COLOR_GRAY2BGR );
+
+	//cv::cvtColor( left,  left,  CV_BGR2GRAY);//cv::COLOR_GRAY2BGR );
+
+	const bool foundL = leftPts.size()  == calibDuo->m_boardSize.area();//  boardSize.area();
+	const bool foundR = rightPts.size() == calibDuo->m_boardSize.area();//  boardSize.area();
+
+	cv::drawChessboardCorners( leftDisplay, calibDuo->m_boardSize , leftPts,  foundL );
+	cv::drawChessboardCorners( rightDisplay,calibDuo->m_boardSize , rightPts, foundR );
+	cv::Mat display = combineTwoImg(leftDisplay, rightDisplay);
+
+	std::stringstream ss;
+	ss << "Press any key to capture a frame, ESC to begin calibration";
+
+
+	cv::putText( display,
+			ss.str(),
+			cv::Point( 10, 30 ),
+			cv::FONT_HERSHEY_SIMPLEX,
+			0.75,
+			WHITE );
+
+	ss.str("");
+	ss << "# Image Sets = " << calibDuo->getNumImageSets();
+
+	cv::putText( display,
+			ss.str(),
+			cv::Point( 10, 60 ),
+			cv::FONT_HERSHEY_SIMPLEX,
+			0.75,
+			WHITE );
+
+	cv::imshow( WINDOW_NAME, display );
+	//cv::imshow("frame", frame);
+
+	const int key = cv::waitKey(1);
+
+	if( key >= 0 )
+	{
+		if( key == 27 )
+		{
+			//
+			// Quit the loop with ESC
+			//
+			//isActive = false;
+			return false;
+		}
+
+		//
+		// Any key press is a command to keep a calibration pair
+		//
+		printf("key down\n");
+		calibDuo->keepMostRecent();
+		return true;
+	}
+	return true;
+}
+
 
 int calib_image_by_file(std::string file_path, cv::Size boardSize)
 {

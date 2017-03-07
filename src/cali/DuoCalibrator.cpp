@@ -57,6 +57,16 @@ const std::string intrinsics = "intrinsicsDuoVGA.yml";
 //const std::string extrinsics = "cameraFiles/extrinsicsDuoVGA-" + dateTime + ".yml";
 const std::string extrinsics = "extrinsicsDuoVGA.yml";
 
+DuoCalibrator::DuoCalibrator( const cv::Size& boardSize ):
+		m_squareLength(2.533),m_boardSize(boardSize),m_imageSize(DUO_FULL)
+{
+
+	//m_squareLength = 2.533 ;  // in cm, but this could be changed to m or mm
+	//m_boardSize = boardSize ; // inner corners (this project's "chessboard" is 9x6)
+	//m_imageSize = VGA ;       // default resolution (could go as high as 752x480)
+
+}
+
 
 void DuoCalibrator::processFrame( const cv::Mat& left,
                                   const cv::Mat& right,
