@@ -220,3 +220,4 @@ bool get_remap_mat(std::string intrinsuc_file, std::string extrinsic_file, cv::S
                                 mapR1, mapR2 );
     return true;
 }
+

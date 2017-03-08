@@ -12,6 +12,24 @@
 
 using namespace std;
 
+CLRStereoCamera::CLRStereoCamera(const std::string& e_file, const std::string& i_file, const cv::Size& image_size){
+	bool is_ok = get_remap_mat(i_file, e_file, image_size, m_mapL1, m_mapL2, m_mapR1, m_mapR2);
+	sgbm =
+    //cv::StereoSGBM::create(   0,   //mindisp
+    cv::StereoSGBM(   0,   //mindisp
+                   48,   //numdisp
+                   5,   //SADWindow
+                   600,   //P1
+                   2400,   //P2
+                   1,   //dispdiffmax
+                   63,   //prefiltercap
+                   10,   //uniqueness
+                   200,   //speckle window size
+                   2   //speckle range
+                   );
+
+}
+
 CLRStereoCamera::CLRStereoCamera(int camera_id) {
 	// TODO Auto-generated constructor stub
 	m_cap = cv::VideoCapture(camera_id);
@@ -196,4 +214,42 @@ void CLRStereoCamera::capture_video(std::string video_usrname, std::string e_fil
 	video_capture.release();
 	remap_video.release();
 	m_cap.release();
+}
+
+void CLRStereoCamera::calc_disp_by_calibFiles(
+			const cv::Mat& l_src, const cv::Mat& r_src,
+			cv::Mat& l_remap, cv::Mat& r_remap, cv::Mat& disp)
+{
+	remap(l_src, l_remap, m_mapL1, m_mapL2, cv::INTER_LINEAR);
+	remap(r_src, r_remap, m_mapR1, m_mapR2, cv::INTER_LINEAR);
+	cv::Mat smallL;
+	cv::Mat smallR;
+	cv::resize(l_remap, l_remap, cv::Size(320,240));
+	cv::resize(r_remap, r_remap, cv::Size(320,240));
+	//sgbm(l_remap, r_remap, disp);
+
+
+    static auto asgbm =
+    //cv::StereoSGBM::create(   0,   //mindisp
+    cv::StereoSGBM(   0,   //mindisp
+                   48,   //numdisp
+                   5,   //SADWindow
+                   25,   //P1
+                   50,   //P2
+                   1,   //dispdiffmax
+                   63,   //prefiltercap
+                   40,   //uniqueness
+                   200,   //speckle window size
+                   2   //speckle range
+                   );
+
+	sgbm(l_remap, r_remap, disp);
+
+	 static cv::Mat disp8;
+    disp.convertTo( disp8, CV_8U, 255.0/(48*16) );
+
+    cv::applyColorMap( disp8, disp, cv::COLORMAP_JET );
+    cv::resize(disp, disp, cv::Size(752,480));
+
+    //cv::applyColorMap( disp, disp, cv::COLORMAP_JET );
 }

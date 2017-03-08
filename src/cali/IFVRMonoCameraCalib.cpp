@@ -228,7 +228,7 @@ IFVRMonoCameraCalib::IFVRMonoCameraCalib(cv::Size chessSize) {
 	// TODO Auto-generated constructor stub
 	m_chessboardSize = chessSize;
 	m_imagePoints.clear();
-	m_imageSize = cv::Size(640,480);
+	m_imageSize = cv::Size(752,480);
 }
 
 IFVRMonoCameraCalib::~IFVRMonoCameraCalib() {
