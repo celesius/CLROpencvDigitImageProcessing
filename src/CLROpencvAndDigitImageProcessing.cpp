@@ -16,6 +16,10 @@
 #include "cali/IFVRMonoCameraCalib.h"
 using namespace std;
 using namespace cv;
+#define ONLYDISPLAY
+//#define DISPARITY
+//#define CALIB_STEREO
+//#define CALIB_MONO
 
 void show_test_mat(){
 	Mat frame = Mat(256,256,CV_8UC1);
@@ -96,9 +100,11 @@ int main(){
 
 int main(){
 	DuoCalibrator calib(cv::Size(11,7)) ;
-	IFVRStereoCamera* cam = new IFVRStereoCamera("/dev/video1", 752, 480, StereoCamera);
-	CLRStereoCamera *stereoCame = new CLRStereoCamera("/home/clover/workspace/EclipseCHome/CLROpencvAndDigitImageProcessing/extrinsicsDuoVGA_20170307.yml",
-			"/home/clover/workspace/EclipseCHome/CLROpencvAndDigitImageProcessing/intrinsicsDuoVGA_20170307.yml", cv::Size(752, 480));
+	IFVRStereoCamera* cam = new IFVRStereoCamera("/dev/video0", 752, 480, StereoCamera);
+#ifdef DISPARITY
+	CLRStereoCamera *stereoCame = new CLRStereoCamera("/home/clover/workspace/CLROpencvDigitImageProcessing/extrinsicsDuoVGA.yml",
+			"/home/clover/workspace/CLROpencvDigitImageProcessing/intrinsicsDuoVGA.yml", cv::Size(752, 480));
+#endif
 	//IFVRStereoCamera* cam = new IFVRStereoCamera("1", 640, 480, MonoCamera);
 	IFVRMonoCameraCalib *monoCamCalib = new IFVRMonoCameraCalib(cv::Size(11,7));
 	cv::Mat drawChessMat;
@@ -120,13 +126,14 @@ int main(){
 	cv::Mat disp;
 	for(;;){
 		cam->update(grayL, grayR);
-
+#ifndef ONLYDISPLAY
+#ifdef DISPARITY
 		stereoCame->calc_disp_by_calibFiles(grayL, grayR,remapL, remapR, disp);
 		cv::imshow("R L", remapL);
 		cv::imshow("R R", remapR);
 		cv::imshow("disp", disp);
 		cv::waitKey(1);
-
+#endif
 		/*
 		capOk = monoCamCalib->captureMat(grayL,true,drawChessMat);
 		cv::putText(drawChessMat, capStatus, cv::Point(50,50),1,1,cv::Scalar(0,255,0));
@@ -154,7 +161,7 @@ int main(){
 			printf("get key = %d\n",key);
 		}
 */
-#if 0
+#ifdef CALIB_STEREO
 		if(capImage)
 			capImage = calibDuoRunByCaptureMat(grayL,grayR,&calib);
 		else
@@ -168,6 +175,7 @@ int main(){
 				cablib = true;
 			}
 		}
+#endif
 #endif
 	}
 

@@ -228,7 +228,7 @@ void CLRStereoCamera::calc_disp_by_calibFiles(
 	cv::resize(r_remap, r_remap, cv::Size(320,240));
 	//sgbm(l_remap, r_remap, disp);
 
-
+/*
     static auto asgbm =
     //cv::StereoSGBM::create(   0,   //mindisp
     cv::StereoSGBM(   0,   //mindisp
@@ -242,7 +242,7 @@ void CLRStereoCamera::calc_disp_by_calibFiles(
                    200,   //speckle window size
                    2   //speckle range
                    );
-
+*/
 	sgbm(l_remap, r_remap, disp);
 
 	 static cv::Mat disp8;
