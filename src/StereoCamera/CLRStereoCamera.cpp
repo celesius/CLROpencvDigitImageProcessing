@@ -12,11 +12,25 @@
 
 using namespace std;
 
+
+CLRStereoCamera::CLRStereoCamera() {
+	initSgbm();
+	m_isUseCalib = false;
+}
+
+
 CLRStereoCamera::CLRStereoCamera(const std::string& e_file, const std::string& i_file, const cv::Size& image_size){
 	bool is_ok = get_remap_mat(i_file, e_file, image_size, m_mapL1, m_mapL2, m_mapR1, m_mapR2);
+	initSgbm();
+	m_isUseCalib = true;
+
+}
+
+void CLRStereoCamera::initSgbm()
+{
 	sgbm =
     //cv::StereoSGBM::create(   0,   //mindisp
-    cv::StereoSGBM(   0,   //mindisp
+    cv::StereoSGBM(0,   //mindisp
                    48,   //numdisp
                    5,   //SADWindow
                    600,   //P1
@@ -27,7 +41,6 @@ CLRStereoCamera::CLRStereoCamera(const std::string& e_file, const std::string& i
                    200,   //speckle window size
                    2   //speckle range
                    );
-
 }
 
 CLRStereoCamera::CLRStereoCamera(int camera_id) {
@@ -215,17 +228,30 @@ void CLRStereoCamera::capture_video(std::string video_usrname, std::string e_fil
 	remap_video.release();
 	m_cap.release();
 }
-
+void CLRStereoCamera::get_remap_image(cv::Mat& leftImage, cv::Mat& rightImage)
+{
+	remap(leftImage, leftImage, m_mapL1, m_mapL2, cv::INTER_LINEAR);
+	remap(rightImage, rightImage, m_mapR1, m_mapR2, cv::INTER_LINEAR);
+}
 void CLRStereoCamera::calc_disp_by_calibFiles(
 			const cv::Mat& l_src, const cv::Mat& r_src,
 			cv::Mat& l_remap, cv::Mat& r_remap, cv::Mat& disp)
 {
-	remap(l_src, l_remap, m_mapL1, m_mapL2, cv::INTER_LINEAR);
-	remap(r_src, r_remap, m_mapR1, m_mapR2, cv::INTER_LINEAR);
+	if(m_isUseCalib){
+		remap(l_src, l_remap, m_mapL1, m_mapL2, cv::INTER_LINEAR);
+		remap(r_src, r_remap, m_mapR1, m_mapR2, cv::INTER_LINEAR);
+	}else{
+		l_remap = l_src;
+		r_remap = r_src;
+	}
 	cv::Mat smallL;
 	cv::Mat smallR;
-	cv::resize(l_remap, l_remap, cv::Size(320,240));
-	cv::resize(r_remap, r_remap, cv::Size(320,240));
+
+	//cv::imshow("R L", l_remap);
+	//cv::imshow("R R", r_remap);
+
+	cv::resize(l_remap, l_remap, cv::Size(l_src.cols/2,l_src.rows/2));
+	cv::resize(r_remap, r_remap, cv::Size(r_src.cols/2,r_src.rows/2));
 	//sgbm(l_remap, r_remap, disp);
 
 /*

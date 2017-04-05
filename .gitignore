@@ -5,6 +5,7 @@
 *.obj
 *.d
 .*~
+.mk
 
 # Precompiled Headers
 *.gch

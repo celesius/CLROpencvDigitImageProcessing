@@ -72,6 +72,7 @@ static bool runCalibration( vector<vector<cv::Point2f> > imagePoints,
                     double& totalAvgErr)
 {
     cameraMatrix = cv::Mat::eye(3, 3, CV_64F);
+
     if( flags & CV_CALIB_FIX_ASPECT_RATIO )
         cameraMatrix.at<double>(0,0) = aspectRatio;
 
@@ -83,7 +84,11 @@ static bool runCalibration( vector<vector<cv::Point2f> > imagePoints,
     objectPoints.resize(imagePoints.size(),objectPoints[0]);
 
     double rms = calibrateCamera(objectPoints, imagePoints, imageSize, cameraMatrix,
-                    distCoeffs, rvecs, tvecs, flags|CV_CALIB_FIX_K4|CV_CALIB_FIX_K5);
+                    distCoeffs, rvecs, tvecs,
+					0);
+					//CV_CALIB_RATIONAL_MODEL );
+					//CV_CALIB_RATIONAL_MODEL |
+					 //CV_CALIB_FIX_K4|CV_CALIB_FIX_K5);
                     ///*|CV_CALIB_FIX_K3*/|CV_CALIB_FIX_K4|CV_CALIB_FIX_K5);
     printf("RMS error reported by calibrateCamera: %g\n", rms);
 
@@ -210,7 +215,6 @@ static bool runAndSave(const string& outputFilename,
            ok ? "Calibration succeeded" : "Calibration failed",
            totalAvgErr);
 
-    /*
     if( ok )
         saveCameraParams( outputFilename, imageSize,
                          boardSize, squareSize, aspectRatio,
@@ -220,7 +224,6 @@ static bool runAndSave(const string& outputFilename,
                          writeExtrinsics ? reprojErrs : vector<float>(),
                          writePoints ? imagePoints : vector<vector<cv::Point2f> >(),
                          totalAvgErr );
-    */
     return ok;
 }
 
@@ -265,6 +268,11 @@ bool IFVRMonoCameraCalib::captureMat(cv::Mat inputMat, bool isDrawChess, cv::Mat
 
 	return found;
 }
+
+void IFVRMonoCameraCalib::resetImageSize(cv::Size imageSize){
+	m_imageSize = imageSize;
+}
+
 //返回矫正误差
 bool IFVRMonoCameraCalib::runCalibAndSaveTo(std::string calibFilePath)
 {

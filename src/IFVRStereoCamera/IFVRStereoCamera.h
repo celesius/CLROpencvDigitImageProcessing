@@ -13,7 +13,8 @@
 
 enum cameraType{
 	MonoCamera,
-	StereoCamera
+	StereoCamera,
+	StereoFile
 };
 
 typedef cameraType CameraType ;
@@ -29,11 +30,16 @@ class IFVRStereoCamera {
 	int m_image_h;
 	CameraType m_cameraType;
 	cv::VideoCapture m_opencvCap;
+	std::string m_imageLPath;
+	std::string m_imageRPath;
+	int m_frameCnt;
+	char m_frameName[500];
 public:
 	IFVRStereoCamera(std::string devn, int w, int h, CameraType camType);
+	IFVRStereoCamera(std::string Lpath, std::string Rpath, CameraType camType);
 	virtual ~IFVRStereoCamera();
 	//void update(uint8_t *image_data);
-	void update(cv::Mat& lMat, cv::Mat& rMat);
+	void update(cv::Mat& lMat, cv::Mat& rMat, bool isFlip,int frameCnt);
 };
 
 #endif /* IFVRSTEREOCAMERA_IFVRSTEREOCAMERA_H_ */

@@ -28,7 +28,10 @@ class CLRStereoCamera {
 	cv::Mat m_mapR1;
 	cv::Mat m_mapR2;
 	cv::StereoSGBM sgbm;
+	bool m_isUseCalib;
+	void initSgbm();
 public:
+	CLRStereoCamera();
 	CLRStereoCamera(const std::string& e_file, const std::string& i_file, const cv::Size& image_size);
 	CLRStereoCamera(int camera_id);
 	virtual ~CLRStereoCamera();
@@ -39,6 +42,7 @@ public:
 	void calc_disp_by_calibFiles(
 			const cv::Mat& l_src, const cv::Mat& r_src,
 			cv::Mat& l_remap, cv::Mat& r_remap, cv::Mat& disp);
+	void get_remap_image(cv::Mat& leftImage, cv::Mat& rightImage);
 };
 
 #endif /* STEREOCAMERA_CLRSTEREOCAMERA_H_ */

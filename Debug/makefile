@@ -9,8 +9,11 @@ RM := rm -rf
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include src/cali/subdir.mk
+-include src/blob/subdir.mk
 -include src/StereoCamera/subdir.mk
 -include src/IFVRStereoCamera/subdir.mk
+-include src/IFVRGround/groundFloorSample/subdir.mk
+-include src/IFVRAvoidances/subdir.mk
 -include src/DisparityMask/subdir.mk
 -include src/CLRCVHelper/subdir.mk
 -include src/subdir.mk

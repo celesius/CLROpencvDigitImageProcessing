@@ -24,4 +24,41 @@
 		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>src/IFVRGround/groundFloorSample</name>
+			<type>2</type>
+			<locationURI>PARENT-1-PROJECT_LOC/IFVRDepthGround/groundFloorSample</locationURI>
+		</link>
+		<link>
+			<name>src/blob/IFVRBlob.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/IFVRBlob/IFVRBlob.cpp</locationURI>
+		</link>
+		<link>
+			<name>src/blob/IFVRBlob.hpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/IFVRBlob/IFVRBlob.hpp</locationURI>
+		</link>
+		<link>
+			<name>src/blob/cvlabeling_imagelab.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/IFVRBlob/cvlabeling_imagelab.cpp</locationURI>
+		</link>
+		<link>
+			<name>src/blob/cvlabeling_imagelab.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/IFVRBlob/cvlabeling_imagelab.h</locationURI>
+		</link>
+		<link>
+			<name>src/blob/mymat.cpp</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/IFVRBlob/mymat.cpp</locationURI>
+		</link>
+		<link>
+			<name>src/blob/mymat.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/IFVRBlob/mymat.h</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>

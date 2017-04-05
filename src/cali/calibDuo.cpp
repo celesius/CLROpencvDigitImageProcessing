@@ -23,7 +23,9 @@ int       GAIN         =   0;
 const int GAIN_MAX     = 100;
 int       LED          =  20;
 const int LED_MAX      = 100;
-
+int frameCntC = 0;
+char nameL[100];
+char nameR[100];
 
 //static void callbackExposure( int, void* ) { SetExposure(EXPOSURE); }
 //static void callbackGain    ( int, void* ) { SetGain(GAIN);         }
@@ -372,8 +374,8 @@ bool calibDuoRunByCaptureMat( cv::Mat& lMat, cv::Mat& rMat, DuoCalibrator *calib
 	//left = splitMat(frame, true);
 	//right = splitMat(frame, false);
 
-	cv::Mat left = lMat;
-	cv::Mat right = rMat;
+	cv::Mat left = lMat.clone();
+	cv::Mat right = rMat.clone();
 	cv::Mat leftDisplay;
 	cv::Mat rightDisplay;
 	cv::Mat frame = combineTwoImg(left, right);
@@ -430,6 +432,8 @@ bool calibDuoRunByCaptureMat( cv::Mat& lMat, cv::Mat& rMat, DuoCalibrator *calib
 
 	const int key = cv::waitKey(1);
 
+
+
 	if( key >= 0 )
 	{
 		if( key == 27 )
@@ -445,7 +449,16 @@ bool calibDuoRunByCaptureMat( cv::Mat& lMat, cv::Mat& rMat, DuoCalibrator *calib
 		// Any key press is a command to keep a calibration pair
 		//
 		printf("key down\n");
-		calibDuo->keepMostRecent();
+
+		if(foundL && foundR){
+			sprintf(nameL,"left%02d.jpg",frameCntC);
+			sprintf(nameR,"right%02d.jpg",frameCntC);
+			cv::imwrite(nameL, lMat);
+			cv::imwrite(nameR, rMat);
+			frameCntC++;
+			calibDuo->keepMostRecent();
+		}
+
 		return true;
 	}
 	return true;

@@ -617,8 +617,8 @@ int video_device::yuyv_2_lr_gray(const void *p, int size, unsigned char *l_buffe
     uint32_t r = 0;
     //char
     for(int i = 0; i< (size/2); i++){
-    	l = (pointer[i*2]) * 4;
-    	r = (pointer[i*2 + 1]) * 4;
+    	//l = (pointer[i*2]) * 1;
+    	//r = (pointer[i*2 + 1]) * 1;
 
     	if(l > 255 )
     		l = 254;//254;
@@ -630,8 +630,21 @@ int video_device::yuyv_2_lr_gray(const void *p, int size, unsigned char *l_buffe
     	//else
     		//r = r*2;
 
-    	l_buffer[i] = (uint8_t) l;//(pointer[i*2] + 10);
-    	r_buffer[i] = (uint8_t) r;//(pointer[i*2 + 1] + 10);
+    	//l_buffer[i] = (uint8_t) l;//(pointer[i*2] + 10);
+    	//r_buffer[i] = (uint8_t) r;//(pointer[i*2 + 1] + 10);
+    	/*
+    	if(pointer[i*2]*2 > 255)
+    		l_buffer[i] = 255;
+    	else
+    		l_buffer[i] = pointer[i*2]*2;
+
+    	if(pointer[i*2 + 1]*2 > 255)
+    		r_buffer[i] = 255;
+    	else
+    		r_buffer[i] = pointer[i*2 + 1]*2;
+*/
+    	l_buffer[i] = (pointer[i*2]);
+    	r_buffer[i] = (pointer[i*2 + 1]);
     }
 	return 0;
 }

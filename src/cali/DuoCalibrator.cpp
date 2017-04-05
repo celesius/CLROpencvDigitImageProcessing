@@ -58,7 +58,7 @@ const std::string intrinsics = "intrinsicsDuoVGA.yml";
 const std::string extrinsics = "extrinsicsDuoVGA.yml";
 
 DuoCalibrator::DuoCalibrator( const cv::Size& boardSize ):
-		m_squareLength(2.533),m_boardSize(boardSize),m_imageSize(DUO_FULL)
+		m_squareLength(1.900),m_boardSize(boardSize),m_imageSize(DUO_FULL)
 {
 
 	//m_squareLength = 2.533 ;  // in cm, but this could be changed to m or mm
@@ -80,114 +80,239 @@ void DuoCalibrator::processFrame( const cv::Mat& left,
   //detectCirclesGridPoints( left,  right, leftPtsOut, rightPtsOut );
 }
 
-
 void DuoCalibrator::calibrate()
 {
-  if( m_objectPts.size() < 10 )
-  {
-    std::cout << "Too few frames, unable to continue with calibration\n";
-    exit(1);
-  }
+	if( m_objectPts.size() < 10 )
+	{
+		std::cout << "Too few frames, unable to continue with calibration\n";
+		exit(1);
+	}
 
-    //const auto calibDuoRoot = std::string(PRJPATH); //expandEnvironmentVariables( "${CALIBDUO_ROOT}/" );
-    const auto calibDuoRoot = std::string("./"); //expandEnvironmentVariables( "${CALIBDUO_ROOT}/" );
+	//const auto calibDuoRoot = std::string(PRJPATH); //expandEnvironmentVariables( "${CALIBDUO_ROOT}/" );
+	const auto calibDuoRoot = std::string("./"); //expandEnvironmentVariables( "${CALIBDUO_ROOT}/" );
 
-  std::cout << "Stereo Calibrate...\n";
+	std::cout << "Stereo Calibrate...\n";
 
-  const auto termCrit =
-      cv::TermCriteria( cv::TermCriteria::COUNT + cv::TermCriteria::EPS,
-                        30,      // iterations
-                        1e-6 );  // change epsilon
+	const auto termCrit =
+			//cv::TermCriteria( cv::TermCriteria::COUNT + cv::TermCriteria::EPS,
+			cv::TermCriteria( CV_TERMCRIT_ITER + CV_TERMCRIT_EPS,
+					//30,      // iterations
+					//1e-6 );  // change epsilon
+					100,      // iterations
+					1e-5 );  // change epsilon
 
-  const double errorX =
-          cv::stereoCalibrate( m_objectPts, m_imagePtsL, m_imagePtsR,
-                           m_M1, m_D1, m_M2, m_D2,
-                           m_imageSize,
-                           m_R, m_T, m_E, m_F,
-                           //CV_CALIB_RATIONAL_MODEL + CV_CALIB_SAME_FOCAL_LENGTH,
-                           //termCrit );
-                              termCrit ,
-                              CV_CALIB_SAME_FOCAL_LENGTH +
-                              CV_CALIB_RATIONAL_MODEL
-                              );
-    
+	const double errorX =
+			cv::stereoCalibrate( m_objectPts, m_imagePtsL, m_imagePtsR,
+					m_M1, m_D1, m_M2, m_D2,
+					m_imageSize,
+					m_R, m_T, m_E, m_F,
+					//CV_CALIB_RATIONAL_MODEL + CV_CALIB_SAME_FOCAL_LENGTH,
+					//termCrit );
+					termCrit ,
+					CV_CALIB_FIX_ASPECT_RATIO +
+					CV_CALIB_FIX_PRINCIPAL_POINT +
+					CV_CALIB_ZERO_TANGENT_DIST +
+					CV_CALIB_SAME_FOCAL_LENGTH +
+					CV_CALIB_RATIONAL_MODEL );
+	//CV_CALIB_FIX_K3 + CV_CALIB_FIX_K4 + CV_CALIB_FIX_K5);//不添加会变形
 
-  std::cout << "Stereo Reprojection Error: " << errorX << std::endl;
+	std::cout << "Stereo Reprojection Error: " << errorX << std::endl;
 
-  cv::FileStorage fsI( calibDuoRoot + intrinsics, cv::FileStorage::WRITE );
+	cv::FileStorage fsI( calibDuoRoot + intrinsics, cv::FileStorage::WRITE );
 
-  if( fsI.isOpened() )
-  {
-    fsI << "DateTime"          << dateTime
-        << "BoardWidth"        << m_boardSize.width
-        << "BoardHeight"       << m_boardSize.height
-        << "SquareLength"      << m_squareLength
-        << "ImageWidth"        << m_imageSize.width
-        << "ImageHeight"       << m_imageSize.height
-        << "NumImagePairs"     << (int) m_objectPts.size()
-        << "ReprojectionError" << errorX;
+	if( fsI.isOpened() )
+	{
+		fsI << "DateTime"          << dateTime
+				<< "BoardWidth"        << m_boardSize.width
+				<< "BoardHeight"       << m_boardSize.height
+				<< "SquareLength"      << m_squareLength
+				<< "ImageWidth"        << m_imageSize.width
+				<< "ImageHeight"       << m_imageSize.height
+				<< "NumImagePairs"     << (int) m_objectPts.size()
+				<< "ReprojectionError" << errorX;
 
-    fsI << "M1" << m_M1
-        << "D1" << m_D1
-        << "M2" << m_M2
-        << "D2" << m_D2;
+		fsI << "M1" << m_M1
+				<< "D1" << m_D1
+				<< "M2" << m_M2
+				<< "D2" << m_D2;
 
-    fsI.release();
-  }
-  else
-  {
-    std::cout << "File <intrinsics>.yml could not be opened.\n";
-    //exit(1);
-  }
+		fsI.release();
+	}
+	else
+	{
+		std::cout << "File <intrinsics>.yml could not be opened.\n";
+		//exit(1);
+	}
 
-  std::cout << "Stereo Rectify...\n";
+	std::cout << "Stereo Rectify...\n";
 
-  cv::stereoRectify( m_M1, m_D1, m_M2, m_D2,
-                     m_imageSize,
-                     m_R, m_T, m_R1, m_R2, m_P1, m_P2, m_Q,
-                     CV_CALIB_ZERO_DISPARITY, 0 );
+	cv::stereoRectify( m_M1, m_D1, m_M2, m_D2,
+			m_imageSize,
+			m_R, m_T, m_R1, m_R2, m_P1, m_P2, m_Q,
+			CV_CALIB_ZERO_DISPARITY, 0 );
 
-  std::cout << "Undistort Rectify\n";
+	std::cout << "Undistort Rectify\n";
 
-  cv::initUndistortRectifyMap( m_M1, m_D1, m_R1, m_P1,
-                               m_imageSize, CV_16SC2,
-                               m_mapL1, m_mapL2 );
+	cv::initUndistortRectifyMap( m_M1, m_D1, m_R1, m_P1,
+			m_imageSize, CV_16SC2,
+			m_mapL1, m_mapL2 );
 
-  cv::initUndistortRectifyMap( m_M2, m_D2, m_R2, m_P2,
-                               m_imageSize, CV_16SC2,
-                               m_mapR1, m_mapR2 );
+	cv::initUndistortRectifyMap( m_M2, m_D2, m_R2, m_P2,
+			m_imageSize, CV_16SC2,
+			m_mapR1, m_mapR2 );
 
-  cv::FileStorage fsX( calibDuoRoot + extrinsics, cv::FileStorage::WRITE );
+	cv::FileStorage fsX( calibDuoRoot + extrinsics, cv::FileStorage::WRITE );
 
-  if( fsX.isOpened() )
-  {
-    fsX << "DateTime"          << dateTime
-        << "BoardWidth"        << m_boardSize.width
-        << "BoardHeight"       << m_boardSize.height
-        << "SquareLength"      << m_squareLength
-        << "ImageWidth"        << m_imageSize.width
-        << "ImageHeight"       << m_imageSize.height
-        << "NumImagePairs"     << (int) m_objectPts.size()
-        << "ReprojectionError" << errorX;
+	if( fsX.isOpened() )
+	{
+		fsX << "DateTime"          << dateTime
+				<< "BoardWidth"        << m_boardSize.width
+				<< "BoardHeight"       << m_boardSize.height
+				<< "SquareLength"      << m_squareLength
+				<< "ImageWidth"        << m_imageSize.width
+				<< "ImageHeight"       << m_imageSize.height
+				<< "NumImagePairs"     << (int) m_objectPts.size()
+				<< "ReprojectionError" << errorX;
 
-    fsX << "R"  << m_R
-        << "T"  << m_T
-        << "R1" << m_R1
-        << "R2" << m_R2
-        << "P1" << m_P1
-        << "P2" << m_P2
-        << "Q"  << m_Q;
+		fsX << "R"  << m_R
+				<< "T"  << m_T
+				<< "R1" << m_R1
+				<< "R2" << m_R2
+				<< "P1" << m_P1
+				<< "P2" << m_P2
+				<< "Q"  << m_Q;
 
-    fsX << "E" << m_E
-        << "F" << m_F;
+		fsX << "E" << m_E
+				<< "F" << m_F;
 
-    fsX.release();
-  }
-  else
-  {
-    std::cout << "File <extrinsics>.yml could not be opened.\n";
-    //exit(2);
-  }
+		fsX.release();
+	}
+	else
+	{
+		std::cout << "File <extrinsics>.yml could not be opened.\n";
+		//exit(2);
+	}
+}
+
+void DuoCalibrator::calibrateWithCameraPara(std::string leftPara, std::string rightPara)
+{
+	if( m_objectPts.size() < 10 )
+	{
+		std::cout << "Too few frames, unable to continue with calibration\n";
+		exit(1);
+	}
+
+	//get_monoRemap_mat(leftPara, m_imageSize, m_M1, m_D1);
+	//get_monoRemap_mat(rightPara, m_imageSize, m_M2, m_D2);
+	//std::cout<<m_M1<<std::endl;
+	//std::cout<<m_M2<<std::endl;
+
+	//const auto calibDuoRoot = std::string(PRJPATH); //expandEnvironmentVariables( "${CALIBDUO_ROOT}/" );
+	const auto calibDuoRoot = std::string("./"); //expandEnvironmentVariables( "${CALIBDUO_ROOT}/" );
+
+	std::cout << "Stereo Calibrate...\n";
+
+	const auto termCrit =
+			//cv::TermCriteria( cv::TermCriteria::COUNT + cv::TermCriteria::EPS,
+			cv::TermCriteria( CV_TERMCRIT_ITER + CV_TERMCRIT_EPS,
+					//30,      // iterations
+					//1e-6 );  // change epsilon
+					100,      // iterations
+					1e-5 );  // change epsilon
+
+	const double errorX =
+			cv::stereoCalibrate( m_objectPts, m_imagePtsL, m_imagePtsR,
+					m_M1, m_D1, m_M2, m_D2,
+					m_imageSize,
+					m_R, m_T, m_E, m_F,
+					//CV_CALIB_RATIONAL_MODEL + CV_CALIB_SAME_FOCAL_LENGTH,
+					//termCrit );
+					termCrit ,
+					0);
+					//CV_CALIB_FIX_INTRINSIC);
+					//CV_CALIB_FIX_ASPECT_RATIO +
+					//CV_CALIB_FIX_PRINCIPAL_POINT +
+					//CV_CALIB_ZERO_TANGENT_DIST +
+					//CV_CALIB_SAME_FOCAL_LENGTH +
+					//CV_CALIB_RATIONAL_MODEL );
+	//CV_CALIB_FIX_K3 + CV_CALIB_FIX_K4 + CV_CALIB_FIX_K5);//不添加会变形
+
+	std::cout << "Stereo Reprojection Error: " << errorX << std::endl;
+
+	cv::FileStorage fsI( calibDuoRoot + intrinsics, cv::FileStorage::WRITE );
+
+	if( fsI.isOpened() )
+	{
+		fsI << "DateTime"          << dateTime
+				<< "BoardWidth"        << m_boardSize.width
+				<< "BoardHeight"       << m_boardSize.height
+				<< "SquareLength"      << m_squareLength
+				<< "ImageWidth"        << m_imageSize.width
+				<< "ImageHeight"       << m_imageSize.height
+				<< "NumImagePairs"     << (int) m_objectPts.size()
+				<< "ReprojectionError" << errorX;
+
+		fsI << "M1" << m_M1
+				<< "D1" << m_D1
+				<< "M2" << m_M2
+				<< "D2" << m_D2;
+
+		fsI.release();
+	}
+	else
+	{
+		std::cout << "File <intrinsics>.yml could not be opened.\n";
+		//exit(1);
+	}
+
+	std::cout << "Stereo Rectify...\n";
+
+	cv::stereoRectify( m_M1, m_D1, m_M2, m_D2,
+			m_imageSize,
+			m_R, m_T, m_R1, m_R2, m_P1, m_P2, m_Q,
+			CV_CALIB_ZERO_DISPARITY, 0 );
+
+	std::cout << "Undistort Rectify\n";
+
+	cv::initUndistortRectifyMap( m_M1, m_D1, m_R1, m_P1,
+			m_imageSize, CV_16SC2,
+			m_mapL1, m_mapL2 );
+
+	cv::initUndistortRectifyMap( m_M2, m_D2, m_R2, m_P2,
+			m_imageSize, CV_16SC2,
+			m_mapR1, m_mapR2 );
+
+	cv::FileStorage fsX( calibDuoRoot + extrinsics, cv::FileStorage::WRITE );
+
+	if( fsX.isOpened() )
+	{
+		fsX << "DateTime"          << dateTime
+				<< "BoardWidth"        << m_boardSize.width
+				<< "BoardHeight"       << m_boardSize.height
+				<< "SquareLength"      << m_squareLength
+				<< "ImageWidth"        << m_imageSize.width
+				<< "ImageHeight"       << m_imageSize.height
+				<< "NumImagePairs"     << (int) m_objectPts.size()
+				<< "ReprojectionError" << errorX;
+
+		fsX << "R"  << m_R
+				<< "T"  << m_T
+				<< "R1" << m_R1
+				<< "R2" << m_R2
+				<< "P1" << m_P1
+				<< "P2" << m_P2
+				<< "Q"  << m_Q;
+
+		fsX << "E" << m_E
+				<< "F" << m_F;
+
+		fsX.release();
+	}
+	else
+	{
+		std::cout << "File <extrinsics>.yml could not be opened.\n";
+		//exit(2);
+	}
 }
 
 //

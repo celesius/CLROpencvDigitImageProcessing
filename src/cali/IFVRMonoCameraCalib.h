@@ -29,6 +29,7 @@ public:
 	virtual ~IFVRMonoCameraCalib();
 	bool captureMat(cv::Mat inputMat, bool isDrawChess, cv::Mat& drawChessMat);
 	bool runCalibAndSaveTo(std::string calibFilePath);
+	void resetImageSize(cv::Size imageSize);
 	void runCheckCalib(const cv::Mat&orgMat, cv::Mat& checkMat);
 	bool saveCurrentPoint();
 };

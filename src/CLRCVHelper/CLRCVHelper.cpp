@@ -171,6 +171,13 @@ bool readYML(std::string fileName, CLRCVFileType ft, std::vector<cv::Mat> &getMa
         fs["T"] >> T;
         getMatArray.push_back(R);
         getMatArray.push_back(T);
+    }else if(ft == CCMonoCamearFile){
+        Mat m1,d1;
+        fs["camera_matrix"] >> m1;
+        fs["distortion_coefficients"] >> d1;
+        getMatArray.clear();
+        getMatArray.push_back(m1);
+        getMatArray.push_back(d1);
     }else{
         std::cerr<<" Read File TYPE err ! "<<std::endl;
         return false;
@@ -221,3 +228,24 @@ bool get_remap_mat(std::string intrinsuc_file, std::string extrinsic_file, cv::S
     return true;
 }
 
+bool get_monoRemap_mat(std::string intrinsuc_file, cv::Size image_size, cv::Mat &map1, cv::Mat &map2){
+    std::vector<cv::Mat> readIData;
+    readYML(intrinsuc_file, CCMonoCamearFile, readIData);
+    Mat m_M1,m_D1;
+    m_M1 = readIData[0];
+    m_D1 = readIData[1];
+	initUndistortRectifyMap(m_M1, m_D1, cv::Mat(),
+			cv::getOptimalNewCameraMatrix(m_M1, m_D1, image_size, 1, image_size, 0),
+			image_size, CV_16SC2, map1, map2);
+	return true;
+}
+
+bool getMatByPath(std::string path, int imageCnt, cv::Mat& image)
+{
+	char name[500];
+	sprintf(name, "%s/image%d.jpg", path.c_str(), imageCnt);
+	image = cv::imread(name);
+	if(image.empty())
+		return false;
+	return true;
+}

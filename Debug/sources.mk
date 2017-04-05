@@ -26,7 +26,10 @@ SUBDIRS := \
 src/CLRCVHelper \
 src \
 src/DisparityMask \
+src/IFVRAvoidances \
+src/IFVRGround/groundFloorSample \
 src/IFVRStereoCamera \
 src/StereoCamera \
+src/blob \
 src/cali \
 

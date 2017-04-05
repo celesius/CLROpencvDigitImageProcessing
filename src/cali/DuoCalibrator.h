@@ -33,6 +33,7 @@ public:
   size_t getNumImageSets() { return m_objectPts.size(); }
 
   void calibrate();
+  void calibrateWithCameraPara(std::string leftPara, std::string rightPara);
 
   const cv::Mat& undistortAndRectifyLeft( const cv::Mat& left ) const;
 
